@@ -29,7 +29,7 @@ class AppAvatars {
   static Map<String, dynamic> generateAvatar() {
     return {
       'icon': getRandomIcon(),
-      'color': getRandomColor().toARGB32(),
+      'color': getRandomColor().value,
     };
   }
 }

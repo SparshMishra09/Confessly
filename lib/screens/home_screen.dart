@@ -76,10 +76,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
                 
                 if (snapshot.hasError) {
+                  print('Home screen error (${confessionProvider.sortBy}): ${snapshot.error}');
                   return Center(
-                    child: Text(
-                      'Error loading confessions',
-                      style: AppTextStyles.body,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('🚨', style: TextStyle(fontSize: 60)),
+                        SizedBox(height: 16),
+                        Text(
+                          'Error loading confessions',
+                          style: AppTextStyles.subheading,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Error: ${snapshot.error}',
+                          style: AppTextStyles.bodySmall,
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Try switching sorting mode
+                            confessionProvider.toggleSort();
+                          },
+                          child: Text('Try Again'),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -113,13 +135,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context, index) {
                     return ConfessionCard(
                       confession: confessions[index],
-                      onReaction: (emoji) {
+                      onReaction: (emoji) async {
                         if (authProvider.user != null) {
-                          confessionProvider.addReaction(
-                            confessions[index].id,
-                            emoji,
-                            authProvider.user!.uid,
-                          );
+                          try {
+                            await confessionProvider.addReaction(
+                              confessions[index].id,
+                              emoji,
+                              authProvider.user!.uid,
+                            );
+                          } catch (e) {
+                            // Show error message to user
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString().replaceAll('Exception: ', '')),
+                                backgroundColor: Colors.orange,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
                         }
                       },
                     );

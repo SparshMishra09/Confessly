@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/confession_provider.dart';
@@ -27,12 +28,22 @@ class _PostConfessionScreenState extends State<PostConfessionScreen> {
     final confessionProvider = Provider.of<ConfessionProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
+    if (authProvider.isLoading) {
+      _showSnackBar('Please wait while we sign you in...');
+      return;
+    }
+    
     if (authProvider.user == null) {
-      _showSnackBar('Please sign in to post');
+      _showSnackBar('Authentication required. Please restart the app.');
       return;
     }
     
     String text = _textController.text.trim();
+    
+    if (text.isEmpty) {
+      _showSnackBar('Please write something to confess');
+      return;
+    }
     
     // Validate confession
     String? error = ModerationService.validateConfession(text);
@@ -40,21 +51,23 @@ class _PostConfessionScreenState extends State<PostConfessionScreen> {
       _showSnackBar(error);
       return;
     }
-    
-    // Check rate limit
-    bool canPost = await confessionProvider.canUserPost(authProvider.user!.uid);
-    if (!canPost) {
-      _showSnackBar('You can only post 5 confessions per day');
-      return;
-    }
+
+    // Note: Removed rate limiting - users can post unlimited confessions
     
     setState(() {
       _isPosting = true;
     });
     
     try {
-      // Get user avatar
+      // Ensure user has an avatar - create one if needed
       Map<String, dynamic>? avatar = await authProvider.getUserAvatar();
+      if (avatar == null) {
+        print('PostConfession: No avatar found, creating one...');
+        // Force create user document with avatar
+        await authProvider.createUserDocumentIfNeeded();
+        avatar = await authProvider.getUserAvatar();
+      }
+      print('PostConfession: Final avatar: $avatar');
       
       Confession confession = Confession(
         id: '',
@@ -65,15 +78,24 @@ class _PostConfessionScreenState extends State<PostConfessionScreen> {
         timestamp: DateTime.now(),
         reactions: {},
         reactionCount: 0,
+        reactedUsers: [], // Initialize empty reacted users list
       );
       
+      print('PostConfession: About to post confession: ${confession.toMap()}');
       await confessionProvider.postConfession(confession);
+      print('PostConfession: Confession posted successfully!');
       
       _showSnackBar('Confession posted successfully!');
+      
+      // Clear the text field
+      _textController.clear();
+      
+      // Navigate back immediately to show the new confession
       Navigator.pop(context);
       
     } catch (e) {
-      _showSnackBar('Error posting confession');
+      print('PostConfession: Error occurred: $e');
+      _showSnackBar('Error posting confession: $e');
     } finally {
       setState(() {
         _isPosting = false;

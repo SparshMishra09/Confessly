@@ -14,11 +14,44 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     
-    if (authProvider.user == null) {
+    if (authProvider.isLoading) {
       return Scaffold(
         backgroundColor: AppColors.backgroundDark,
         body: Center(
-          child: Text('Please sign in', style: AppTextStyles.body),
+          child: CircularProgressIndicator(color: AppColors.primaryPurple),
+        ),
+      );
+    }
+    
+    if (authProvider.user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.backgroundDark,
+        appBar: AppBar(
+          backgroundColor: AppColors.backgroundDark,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: AppColors.textWhite),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text('My Confessions', style: AppTextStyles.heading),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('🔐', style: TextStyle(fontSize: 60)),
+              SizedBox(height: 16),
+              Text(
+                'Authentication required',
+                style: AppTextStyles.subheading,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Please wait while we sign you in...',
+                style: AppTextStyles.bodySmall,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -44,8 +77,33 @@ class ProfileScreen extends StatelessWidget {
           }
           
           if (snapshot.hasError) {
+            print('Profile error: ${snapshot.error}');
             return Center(
-              child: Text('Error loading confessions', style: AppTextStyles.body),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('🚨', style: TextStyle(fontSize: 60)),
+                  SizedBox(height: 16),
+                  Text('Error loading confessions', style: AppTextStyles.subheading),
+                  SizedBox(height: 8),
+                  Text(
+                    'Error: ${snapshot.error}',
+                    style: AppTextStyles.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Trigger a rebuild
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProfileScreen()),
+                      );
+                    },
+                    child: Text('Retry'),
+                  ),
+                ],
+              ),
             );
           }
           
@@ -117,7 +175,17 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         confessions[index].id,
                       ),
-                      onReaction: (_) {},
+                      onReaction: (emoji) {
+                        // Allow reactions in profile screen too
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        if (authProvider.user != null) {
+                          _firestoreService.addReaction(
+                            confessions[index].id,
+                            emoji,
+                            authProvider.user!.uid,
+                          );
+                        }
+                      },
                     );
                   },
                 ),

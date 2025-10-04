@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserData {
   final String userId;
   final String avatarIcon;
@@ -18,7 +20,7 @@ class UserData {
       'userId': userId,
       'avatarIcon': avatarIcon,
       'avatarColor': avatarColor,
-      'createdAt': createdAt,
+      'createdAt': Timestamp.fromDate(createdAt),
       'postCount': postCount,
     };
   }

@@ -46,11 +46,8 @@ class ConfessionProvider with ChangeNotifier {
       await _firestoreService.addReaction(confessionId, emoji, userId);
     } catch (e) {
       print('Error adding reaction: $e');
+      rethrow; // Let the UI handle the error message
     }
-  }
-
-  Future<bool> canUserPost(String userId) async {
-    return await _firestoreService.canUserPost(userId);
   }
 
   Future<void> deleteConfession(String confessionId) async {

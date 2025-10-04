@@ -9,6 +9,7 @@ class Confession {
   final DateTime timestamp;
   final Map<String, int> reactions;
   final int reactionCount;
+  final List<String> reactedUsers; // Track users who have reacted
 
   Confession({
     required this.id,
@@ -19,6 +20,7 @@ class Confession {
     required this.timestamp,
     required this.reactions,
     required this.reactionCount,
+    this.reactedUsers = const [],
   });
 
   factory Confession.fromFirestore(DocumentSnapshot doc) {
@@ -32,6 +34,7 @@ class Confession {
       timestamp: (data['timestamp'] as Timestamp).toDate(),
       reactions: Map<String, int>.from(data['reactions'] ?? {}),
       reactionCount: data['reactionCount'] ?? 0,
+      reactedUsers: List<String>.from(data['reactedUsers'] ?? []),
     );
   }
 
@@ -44,6 +47,7 @@ class Confession {
       'timestamp': Timestamp.fromDate(timestamp),
       'reactions': reactions,
       'reactionCount': reactionCount,
+      'reactedUsers': reactedUsers,
     };
   }
 }

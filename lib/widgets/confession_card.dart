@@ -49,9 +49,18 @@ class ConfessionCard extends StatelessWidget {
               ),
               SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  timeago.format(confession.timestamp),
-                  style: AppTextStyles.bodySmall,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      timeago.format(confession.timestamp),
+                      style: AppTextStyles.bodySmall,
+                    ),
+                    Text(
+                      'User: ${confession.userId.substring(0, 8)}...',
+                      style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+                    ),
+                  ],
                 ),
               ),
               if (showDelete && onDelete != null)
