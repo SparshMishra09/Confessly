@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1035669318045",
+    "project_id": "confey-f8757",
+    "storage_bucket": "confey-f8757.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1035669318045:android:a5a9a038ab162e0627a774",
+        "android_client_info": {
+          "package_name": "com.example.confessly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr-LGDES1G_kHz93k1-kxd_Mem_HeC9Vk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
